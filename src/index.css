@@ -1,0 +1,150 @@
+:root {
+  font-family: "JetBrains Mono", system-ui, monospace;
+  color: #111;
+  background-color: #fff;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+a {
+  text-decoration: none;
+  color: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: font-weight 0.25s ease;
+}
+
+a:hover,
+a:hover h1,
+a:hover span,
+a:hover p {
+  font-weight: 950;
+}
+
+.header a:hover h1,
+.footer a:hover span {
+  font-weight: 950;
+}
+
+p {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.header,
+.footer {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+}
+
+.header h1,
+.header span,
+.footer h1,
+.footer span {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  transition: font-weight 0.25s ease;
+}
+
+.header h1,
+.footer h1 {
+  font-weight: 600;
+  margin: 0rem;
+}
+
+.header span,
+.footer span {
+  font-weight: 500;
+}
+
+.header-links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.lang-select {
+  font-family: inherit;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #111;
+  background: #fff;
+  border: 1px solid #111;
+  border-radius: 0;
+  padding: 0.02rem 0.2rem;
+  cursor: pointer;
+  appearance: none;
+}
+
+.lang-select:focus {
+  outline: none;
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.content {
+  flex: 1;
+  padding-left: 0.5rem;
+  padding-top: 2rem;
+  max-width: 320px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+}
+
+.content ul {
+  padding: 0;
+  margin: 0;
+}
+.content-links {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.content-links li {
+  list-style: none;
+  width: fit-content;
+}
+
+.content-links a {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #111;
+}
