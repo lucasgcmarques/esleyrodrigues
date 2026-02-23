@@ -1,10 +1,10 @@
 import { useState, useRef, useMemo, useEffect } from "react";
-import { ScrambleText } from "./ScrambleText";
-import { InfiniteImageScroll } from "./InfiniteImageScroll";
+import { ScrambleText } from "./components/ScrambleText";
+import { InfiniteImageScroll } from "./components/InfiniteImageScroll";
 import {
   useScrambleTimeline,
   runScrambleAnimation,
-} from "./useScrambleTimeline";
+} from "./hooks/useScrambleTimeline";
 import { siteTitle, email, projects, links, texts } from "./data";
 
 function App() {

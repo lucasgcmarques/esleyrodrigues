@@ -35,6 +35,8 @@ export function InfiniteImageScroll({
     const content = contentRef.current;
     if (!el || !content || !itemStyles.length) return;
 
+    const imageTweens = [];
+
     const applyWidths = () => {
       const items = content.querySelectorAll(".infinite-scroll-item");
       items.forEach((item, i) => {
@@ -47,6 +49,30 @@ export function InfiniteImageScroll({
     };
 
     applyWidths();
+
+    const items = content.querySelectorAll(".infinite-scroll-item");
+    items.forEach((item) => {
+      const img = item.querySelector("img");
+      if (!img) return;
+
+      const tween = gsap.fromTo(
+        img,
+        { "--img-offset": "-5%" },
+        {
+          "--img-offset": "5%",
+          ease: "none",
+          scrollTrigger: {
+            scroller: el,
+            trigger: item,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true,
+          },
+        },
+      );
+
+      imageTweens.push(tween);
+    });
 
     let innerRafId;
     const rafId = requestAnimationFrame(() => {
@@ -85,6 +111,7 @@ export function InfiniteImageScroll({
     return () => {
       cancelAnimationFrame(rafId);
       if (innerRafId != null) cancelAnimationFrame(innerRafId);
+      imageTweens.forEach((tween) => tween.kill());
       scrollTriggerRef.current?.kill();
     };
   }, [projects.length, itemStyles]);

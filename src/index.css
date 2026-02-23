@@ -192,15 +192,18 @@ p {
 }
 
 .infinite-scroll-item img {
+  --img-offset: 0%;
+  --img-scale: 1.08;
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.25s ease;
+  transition: transform 0.25s;
+  transform: translateY(var(--img-offset)) scale(var(--img-scale));
 }
 
 .infinite-scroll-item.hovered img {
-  transform: scale(1.05);
+  --img-scale: 1.13;
 }
 
 .content-links li.hovered a,
