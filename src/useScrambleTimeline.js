@@ -16,6 +16,20 @@ function runScrambleOnUpdate(el, text, progress) {
   }
 }
 
+/** Roda o efeito scramble em um elemento (ex.: ao trocar idioma). */
+export function runScrambleAnimation(el, text, duration = 0.6) {
+  if (!el || !text) return;
+  el.textContent = "";
+  const obj = { progress: 0 };
+  gsap.to(obj, {
+    progress: 1,
+    duration,
+    ease: "none",
+    onUpdate: () => runScrambleOnUpdate(el, text, obj.progress),
+    onComplete: () => { el.textContent = text; },
+  });
+}
+
 export function useScrambleTimeline(elements, cursorRef) {
   useLayoutEffect(() => {
     const cursorEl = cursorRef?.current;

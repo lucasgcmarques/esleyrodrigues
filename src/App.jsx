@@ -1,45 +1,11 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { ScrambleText } from "./ScrambleText";
-import { useScrambleTimeline } from "./useScrambleTimeline";
-
-const projects = [
-  { name: "Ipanema", url: "https://vimeo.com/1049447083" },
-  { name: "Rabanne - Manu Gavassi", url: "https://vimeo.com/1049449392" },
-  { name: "Zasm", url: "https://vimeo.com/1050914691" },
-  { name: "Lofficiel Chile", url: "https://vimeo.com/1056363481" },
-  { name: "Egeo Cogu - O Boticário", url: "https://vimeo.com/1079961555" },
-  { name: "NBA - O Boticário", url: "https://vimeo.com/1079963535" },
-  { name: "Shark beauty", url: "https://vimeo.com/1084248690" },
-  { name: "Noize - Marina Sena", url: "https://vimeo.com/1086193697" },
-  { name: "Silvia Braz - Goly", url: "https://vimeo.com/1102044884" },
-  { name: "Boticário Hadiya", url: "https://vimeo.com/1140094422" },
-  {
-    name: "Carta de Maria - Rubel & Marina Senna",
-    url: "https://vimeo.com/1166383950",
-  },
-];
-
-const links = [
-  { name: "vimeo", url: "https://vimeo.com/esleyrodrigues" },
-  { name: "instagram", url: "https://instagram.com/user123456789" },
-];
-
-const texts = {
-  pt: {
-    profession: "Diretor de Fotografia",
-    description:
-      "Criativo e desenvolvedor. Trabalho com design e código para contar histórias e construir experiências.",
-    about: "sobre",
-    projectsTitle: "projetos",
-  },
-  en: {
-    profession: "Director of Photography",
-    description:
-      "Creative and developer. I work with design and code to tell stories and build experiences.",
-    about: "about",
-    projectsTitle: "projects",
-  },
-};
+import { InfiniteImageScroll } from "./InfiniteImageScroll";
+import {
+  useScrambleTimeline,
+  runScrambleAnimation,
+} from "./useScrambleTimeline";
+import { siteTitle, email, projects, links, texts } from "./data";
 
 function App() {
   const [lang, setLang] = useState("pt");
@@ -54,10 +20,10 @@ function App() {
 
   const timelineElements = useMemo(
     () => [
-      { ref: titleRef, text: "Esley Rodrigues", duration: 2 },
+      { ref: titleRef, text: siteTitle, duration: 2 },
       { ref: professionRef, text: t.profession, duration: 2 },
       { ref: descriptionRef, text: t.description, duration: 2 },
-      { ref: emailRef, text: "esleycontato@gmail.com", duration: 2 },
+      { ref: emailRef, text: email, duration: 2 },
       { ref: projectsTitleRef, text: t.projectsTitle, duration: 2 },
     ],
     [t.profession, t.description, t.projectsTitle],
@@ -65,13 +31,28 @@ function App() {
 
   useScrambleTimeline(timelineElements, cursorRef);
 
+  // Quando trocar o idioma, ativa o scramble apenas nos textos que mudam
+  const prevLangRef = useRef(lang);
+  useEffect(() => {
+    if (prevLangRef.current === lang) return; // evita rodar no primeiro mount
+    prevLangRef.current = lang;
+
+    const duration = 0.5;
+    if (professionRef.current)
+      runScrambleAnimation(professionRef.current, t.profession, duration);
+    if (descriptionRef.current)
+      runScrambleAnimation(descriptionRef.current, t.description, duration);
+    if (projectsTitleRef.current)
+      runScrambleAnimation(projectsTitleRef.current, t.projectsTitle, duration);
+  }, [lang, t.profession, t.description, t.projectsTitle]);
+
   return (
     <div className="layout">
       <header className="header">
         <a href="#">
           <ScrambleText
             ref={titleRef}
-            text="Esley Rodrigues"
+            text={siteTitle}
             as="h1"
             timeline
           />
@@ -114,12 +95,12 @@ function App() {
           {" "}
           <ScrambleText
             ref={emailRef}
-            text="esleycontato@gmail.com"
+            text={email}
             as="span"
             timeline
           />
           <span ref={cursorRef} className="scramble-cursor" aria-hidden>
-            |
+            ⇠
           </span>{" "}
         </p>
         <p style={{ marginBottom: "0" }}>
@@ -146,6 +127,8 @@ function App() {
           ))}
         </ul>
       </div>
+
+      <InfiniteImageScroll />
 
       <footer className="footer">
         {links.map((link) => (
