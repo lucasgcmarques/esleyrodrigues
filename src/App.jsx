@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useRef, useMemo } from "react";
+import { ScrambleText } from "./ScrambleText";
+import { useScrambleTimeline } from "./useScrambleTimeline";
 
 const projects = [
   { name: "Ipanema", url: "https://vimeo.com/1049447083" },
@@ -41,14 +43,38 @@ const texts = {
 
 function App() {
   const [lang, setLang] = useState("pt");
-
   const t = texts[lang];
+
+  const titleRef = useRef(null);
+  const professionRef = useRef(null);
+  const descriptionRef = useRef(null);
+  const emailRef = useRef(null);
+  const projectsTitleRef = useRef(null);
+  const cursorRef = useRef(null);
+
+  const timelineElements = useMemo(
+    () => [
+      { ref: titleRef, text: "Esley Rodrigues", duration: 2 },
+      { ref: professionRef, text: t.profession, duration: 2 },
+      { ref: descriptionRef, text: t.description, duration: 2 },
+      { ref: emailRef, text: "esleycontato@gmail.com", duration: 2 },
+      { ref: projectsTitleRef, text: t.projectsTitle, duration: 2 },
+    ],
+    [t.profession, t.description, t.projectsTitle],
+  );
+
+  useScrambleTimeline(timelineElements, cursorRef);
 
   return (
     <div className="layout">
       <header className="header">
         <a href="#">
-          <h1>Esley Rodrigues</h1>
+          <ScrambleText
+            ref={titleRef}
+            text="Esley Rodrigues"
+            as="h1"
+            timeline
+          />
         </a>
         <div className="header-links">
           <a href="#">
@@ -67,14 +93,54 @@ function App() {
       </header>
 
       <div className="content">
-        <p style={{ marginBottom: "0" }}>__{t.profession}</p>
-        <p style={{ marginTop: "0" }}>{t.description}</p>
-        <p style={{ marginBottom: "0" }}>__{t.projectsTitle}</p>
+        <p style={{ marginBottom: "0" }}>
+          __
+          <ScrambleText
+            ref={professionRef}
+            text={t.profession}
+            as="span"
+            timeline
+          />
+        </p>
+        <p style={{ marginTop: "0" }}>
+          <ScrambleText
+            ref={descriptionRef}
+            text={t.description}
+            as="span"
+            timeline
+          />
+        </p>
+        <p>
+          {" "}
+          <ScrambleText
+            ref={emailRef}
+            text="esleycontato@gmail.com"
+            as="span"
+            timeline
+          />
+          <span ref={cursorRef} className="scramble-cursor" aria-hidden>
+            |
+          </span>{" "}
+        </p>
+        <p style={{ marginBottom: "0" }}>
+          __
+          <ScrambleText
+            ref={projectsTitleRef}
+            text={t.projectsTitle}
+            as="span"
+            timeline
+          />
+        </p>
         <ul className="content-links">
           {projects.map((project) => (
             <li key={project.url}>
               <a href={project.url} target="_blank" rel="noopener noreferrer">
-                {project.name}
+                <ScrambleText
+                  text={project.name}
+                  as="span"
+                  duration={0.8}
+                  delay={1}
+                />
               </a>
             </li>
           ))}
@@ -89,7 +155,7 @@ function App() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <span>{link.name}</span>
+            <ScrambleText text={link.name} as="span" duration={0.6} />
           </a>
         ))}
       </footer>

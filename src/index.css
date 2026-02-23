@@ -148,3 +148,10 @@ p {
   text-transform: uppercase;
   color: #111;
 }
+
+.scramble-cursor {
+  font-size: 0.75rem;
+  opacity: 1;
+  display: inline;
+  margin-left: 0.05em;
+}
