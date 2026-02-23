@@ -162,7 +162,7 @@ p {
   top: 0;
   bottom: 0;
   right: 20rem;
-  width: min(280px, 40vw);
+  width: min(960px, 50vw);
   overflow-y: auto;
   overflow-x: hidden;
   z-index: 0;
@@ -178,15 +178,17 @@ p {
 .infinite-scroll-content {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  align-items: flex-start; /* evita stretch; largura de cada item vem do GSAP */
 }
 
 .infinite-scroll-item {
   flex-shrink: 0;
-  width: 100%;
   aspect-ratio: 4/3;
   overflow: hidden;
   background: #f5f5f5;
+  max-width: 100%;
+  min-width: 50%;
+  /* width e alignSelf definidos via GSAP (por índice de projeto, idêntico nas duas metades) */
 }
 
 .infinite-scroll-item img {
@@ -194,4 +196,14 @@ p {
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.25s ease;
+}
+
+.infinite-scroll-item.hovered img {
+  transform: scale(1.05);
+}
+
+.content-links li.hovered a,
+.content-links li.hovered a span {
+  font-weight: 950;
 }

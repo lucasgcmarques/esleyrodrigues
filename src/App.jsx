@@ -9,6 +9,7 @@ import { siteTitle, email, projects, links, texts } from "./data";
 
 function App() {
   const [lang, setLang] = useState("pt");
+  const [hoveredProjectIndex, setHoveredProjectIndex] = useState(null);
   const t = texts[lang];
 
   const titleRef = useRef(null);
@@ -113,8 +114,13 @@ function App() {
           />
         </p>
         <ul className="content-links">
-          {projects.map((project) => (
-            <li key={project.url}>
+          {projects.map((project, i) => (
+            <li
+              key={project.url}
+              className={hoveredProjectIndex === i ? "hovered" : ""}
+              onMouseEnter={() => setHoveredProjectIndex(i)}
+              onMouseLeave={() => setHoveredProjectIndex(null)}
+            >
               <a href={project.url} target="_blank" rel="noopener noreferrer">
                 <ScrambleText
                   text={project.name}
@@ -128,7 +134,11 @@ function App() {
         </ul>
       </div>
 
-      <InfiniteImageScroll />
+      <InfiniteImageScroll
+          projects={projects}
+          hoveredProjectIndex={hoveredProjectIndex}
+          onProjectHover={setHoveredProjectIndex}
+        />
 
       <footer className="footer">
         {links.map((link) => (

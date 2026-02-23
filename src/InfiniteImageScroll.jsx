@@ -1,65 +1,114 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useMemo } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-const DEFAULT_IMAGES = [
-  "https://picsum.photos/400/300?random=1",
-  "https://picsum.photos/400/300?random=2",
-  "https://picsum.photos/400/300?random=3",
-  "https://picsum.photos/400/300?random=4",
-  "https://picsum.photos/400/300?random=5",
-  "https://picsum.photos/400/300?random=6",
-];
+gsap.registerPlugin(ScrollTrigger);
 
-export function InfiniteImageScroll({ images = DEFAULT_IMAGES }) {
+const alignments = ["flex-start", "flex-end", "center"];
+
+function getStylesForProjects(n) {
+  return Array.from({ length: n }, () => ({
+    widthPct: 55 + Math.random() * 42,
+    align: alignments[Math.floor(Math.random() * alignments.length)],
+  }));
+}
+
+export function InfiniteImageScroll({
+  projects = [],
+  hoveredProjectIndex,
+  onProjectHover,
+}) {
   const scrollRef = useRef(null);
   const contentRef = useRef(null);
   const isAdjustingRef = useRef(false);
+  const scrollTriggerRef = useRef(null);
 
-  // Duplicamos a lista para criar o efeito de loop contínuo
-  const duplicatedImages = [...images, ...images];
+  const duplicatedProjects = [...projects, ...projects];
+
+  const itemStyles = useMemo(
+    () => getStylesForProjects(projects.length),
+    [projects.length],
+  );
 
   useEffect(() => {
     const el = scrollRef.current;
     const content = contentRef.current;
-    if (!el || !content) return;
+    if (!el || !content || !itemStyles.length) return;
 
-    const singleSetHeight = content.offsetHeight / 2;
-
-    const handleScroll = () => {
-      if (isAdjustingRef.current) return;
-
-      const { scrollTop } = el;
-
-      // Passou do fim da primeira metade → volta para manter loop contínuo
-      if (scrollTop > singleSetHeight) {
-        isAdjustingRef.current = true;
-        el.scrollTop = scrollTop - singleSetHeight;
-        requestAnimationFrame(() => {
-          isAdjustingRef.current = false;
+    const applyWidths = () => {
+      const items = content.querySelectorAll(".infinite-scroll-item");
+      items.forEach((item, i) => {
+        const s = itemStyles[i % itemStyles.length];
+        gsap.set(item, {
+          width: `${s.widthPct}%`,
+          alignSelf: s.align,
         });
-      }
-
-      // No topo (scroll para cima) → vai para o fim da primeira metade para poder continuar
-      if (scrollTop <= 0) {
-        isAdjustingRef.current = true;
-        el.scrollTop = singleSetHeight;
-        requestAnimationFrame(() => {
-          isAdjustingRef.current = false;
-        });
-      }
+      });
     };
 
-    el.addEventListener("scroll", handleScroll, { passive: true });
-    return () => el.removeEventListener("scroll", handleScroll);
-  }, [images.length]);
+    applyWidths();
+
+    let innerRafId;
+    const rafId = requestAnimationFrame(() => {
+      applyWidths();
+      innerRafId = requestAnimationFrame(() => {
+        const singleSetHeight = content.offsetHeight / 2;
+
+        scrollTriggerRef.current = ScrollTrigger.create({
+          scroller: el,
+          trigger: content,
+          start: "top top",
+          end: "bottom bottom",
+          onUpdate: () => {
+            if (isAdjustingRef.current) return;
+
+            const scrollTop = el.scrollTop;
+
+            if (scrollTop > singleSetHeight) {
+              isAdjustingRef.current = true;
+              gsap.set(el, { scrollTop: scrollTop - singleSetHeight });
+              requestAnimationFrame(() => {
+                isAdjustingRef.current = false;
+              });
+            } else if (scrollTop <= 0) {
+              isAdjustingRef.current = true;
+              gsap.set(el, { scrollTop: singleSetHeight });
+              requestAnimationFrame(() => {
+                isAdjustingRef.current = false;
+              });
+            }
+          },
+        });
+      });
+    });
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      if (innerRafId != null) cancelAnimationFrame(innerRafId);
+      scrollTriggerRef.current?.kill();
+    };
+  }, [projects.length, itemStyles]);
+
+  if (!projects.length) return null;
 
   return (
     <div className="infinite-scroll-wrap" ref={scrollRef}>
       <div className="infinite-scroll-content" ref={contentRef}>
-        {duplicatedImages.map((src, i) => (
-          <div key={`${src}-${i}`} className="infinite-scroll-item">
-            <img src={src} alt="" loading="lazy" />
-          </div>
-        ))}
+        {duplicatedProjects.map((project, i) => {
+          const projectIndex = i % projects.length;
+          const isHovered = hoveredProjectIndex === projectIndex;
+          const imageUrl = project.image || `https://picsum.photos/400/300?random=${projectIndex + 1}`;
+          return (
+            <div
+              key={`${project.url}-${i}`}
+              className={`infinite-scroll-item ${isHovered ? "hovered" : ""}`}
+              onMouseEnter={() => onProjectHover?.(projectIndex)}
+              onMouseLeave={() => onProjectHover?.(null)}
+            >
+              <img src={imageUrl} alt="" loading="lazy" />
+            </div>
+          );
+        })}
       </div>
     </div>
   );
