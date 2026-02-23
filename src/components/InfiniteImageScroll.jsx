@@ -57,9 +57,9 @@ export function InfiniteImageScroll({
 
       const tween = gsap.fromTo(
         img,
-        { "--img-offset": "-5%" },
+        { "--img-offset": "-20%" },
         {
-          "--img-offset": "5%",
+          "--img-offset": "20%",
           ease: "none",
           scrollTrigger: {
             scroller: el,
@@ -124,7 +124,9 @@ export function InfiniteImageScroll({
         {duplicatedProjects.map((project, i) => {
           const projectIndex = i % projects.length;
           const isHovered = hoveredProjectIndex === projectIndex;
-          const imageUrl = project.image || `https://picsum.photos/400/300?random=${projectIndex + 1}`;
+          const imageUrl =
+            project.image ||
+            `https://picsum.photos/400/300?random=${projectIndex + 1}`;
           return (
             <div
               key={`${project.url}-${i}`}
@@ -133,6 +135,7 @@ export function InfiniteImageScroll({
               onMouseLeave={() => onProjectHover?.(null)}
             >
               <img src={imageUrl} alt="" loading="lazy" />
+              <span className="infinite-scroll-play" aria-hidden="true" />
             </div>
           );
         })}

@@ -184,11 +184,28 @@ p {
 .infinite-scroll-item {
   flex-shrink: 0;
   aspect-ratio: 4/3;
+  position: relative;
   overflow: hidden;
   background: #f5f5f5;
   max-width: 100%;
   min-width: 50%;
+  cursor: pointer;
   /* width e alignSelf definidos via GSAP (por índice de projeto, idêntico nas duas metades) */
+}
+
+.infinite-scroll-item::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.infinite-scroll-item.hovered::after {
+  opacity: 0.35;
 }
 
 .infinite-scroll-item img {
@@ -196,6 +213,7 @@ p {
   --img-scale: 1.08;
   width: 100%;
   height: 100%;
+  scale: var(--img-scale);
   object-fit: cover;
   display: block;
   transition: transform 0.25s;
@@ -204,6 +222,26 @@ p {
 
 .infinite-scroll-item.hovered img {
   --img-scale: 1.13;
+}
+
+.infinite-scroll-play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 14px 0 14px 24px;
+  border-color: transparent transparent transparent #fff;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.infinite-scroll-item.hovered .infinite-scroll-play {
+  opacity: 1;
 }
 
 .content-links li.hovered a,
