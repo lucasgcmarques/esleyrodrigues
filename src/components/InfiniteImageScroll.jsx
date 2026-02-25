@@ -4,14 +4,14 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Formato do CodePen GreenSock: grid 12 colunas, alturas em vh, posições variadas
+// Grid 12 colunas; altura do item vem do aspect-ratio de cada imagem
 const GRID_LAYOUTS = [
-  { gridColumn: "1 / -1", height: "95vh" },
-  { gridColumn: "2 / span 8", height: "60vh" },
-  { gridColumn: "4 / span 8", height: "60vh" },
-  { gridColumn: "1 / -1", height: "60vh" },
-  { gridColumn: "4 / span 8", height: "80vh" },
-  { gridColumn: "2 / span 8", height: "80vh" },
+  { gridColumn: "1 / -1" },
+  { gridColumn: "2 / span 8" },
+  { gridColumn: "4 / span 8" },
+  { gridColumn: "1 / -1" },
+  { gridColumn: "4 / span 8" },
+  { gridColumn: "2 / span 8" },
 ];
 
 export function InfiniteImageScroll({
@@ -135,13 +135,17 @@ export function InfiniteImageScroll({
           const imageUrl =
             project.image ||
             `https://picsum.photos/1200/800?random=${projectIndex + 1}`;
+          const w = project.width ?? 16;
+          const h = project.height ?? 9;
+          const aspectRatio = w / h;
           return (
             <div
               key={`${project.url}-${i}`}
               className={`infinite-scroll-item ${isHovered ? "hovered" : ""}`}
               style={{
                 gridColumn: layout.gridColumn,
-                height: layout.height,
+                aspectRatio,
+                width: "100%",
               }}
               onMouseEnter={() => onProjectHover?.(projectIndex)}
               onMouseLeave={() => onProjectHover?.(null)}

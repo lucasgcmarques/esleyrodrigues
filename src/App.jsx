@@ -5,7 +5,14 @@ import {
   useScrambleTimeline,
   runScrambleAnimation,
 } from "./hooks/useScrambleTimeline";
-import { siteTitle, email, projects, links, texts } from "./data";
+import { useVimeoApi } from "./hooks/useVimeoApi";
+import {
+  siteTitle,
+  email,
+  projects as staticProjects,
+  links,
+  texts,
+} from "./data";
 
 function App() {
   const [lang, setLang] = useState("pt");
@@ -31,6 +38,8 @@ function App() {
   );
 
   useScrambleTimeline(timelineElements, cursorRef);
+  const { projects: vimeoProjects } = useVimeoApi();
+  const projects = vimeoProjects?.length > 0 ? vimeoProjects : staticProjects;
 
   // Quando trocar o idioma, ativa o scramble apenas nos textos que mudam
   const prevLangRef = useRef(lang);
@@ -51,17 +60,22 @@ function App() {
     <div className="layout">
       <header className="header">
         <a href="#">
-          <ScrambleText
-            ref={titleRef}
-            text={siteTitle}
-            as="h1"
-            timeline
-          />
+          <ScrambleText ref={titleRef} text={siteTitle} as="h1" timeline />
         </a>
         <div className="header-links">
           <a href="#">
-            <span>{t.about}</span>
+            <span>about</span>
           </a>
+          {links.map((link) => (
+            <a
+              key={link.url}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ScrambleText text={link.name} as="span" duration={0.6} />
+            </a>
+          ))}
           <select
             className="lang-select"
             value={lang}
@@ -94,12 +108,7 @@ function App() {
         </p>
         <p>
           {" "}
-          <ScrambleText
-            ref={emailRef}
-            text={email}
-            as="span"
-            timeline
-          />
+          <ScrambleText ref={emailRef} text={email} as="span" timeline />
           <span ref={cursorRef} className="scramble-cursor" aria-hidden>
             ⇠
           </span>{" "}
@@ -135,10 +144,10 @@ function App() {
       </div>
 
       <InfiniteImageScroll
-          projects={projects}
-          hoveredProjectIndex={hoveredProjectIndex}
-          onProjectHover={setHoveredProjectIndex}
-        />
+        projects={projects}
+        hoveredProjectIndex={hoveredProjectIndex}
+        onProjectHover={setHoveredProjectIndex}
+      />
 
       <footer className="footer">
         {links.map((link) => (
