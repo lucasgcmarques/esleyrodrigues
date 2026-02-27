@@ -138,6 +138,9 @@ export function InfiniteImageScroll({
           const w = project.width ?? 16;
           const h = project.height ?? 9;
           const aspectRatio = w / h;
+          // Limita tamanho sem distorcer: maxHeight 800px => maxWidth = 800 * aspectRatio; cap também em 1000px
+          const maxHeightPx = 800;
+          const maxWidthPx = Math.min(1000, maxHeightPx * aspectRatio);
           return (
             <div
               key={`${project.url}-${i}`}
@@ -146,6 +149,8 @@ export function InfiniteImageScroll({
                 gridColumn: layout.gridColumn,
                 aspectRatio,
                 width: "100%",
+                maxWidth: `${maxWidthPx}px`,
+                margin: "0 auto",
               }}
               onMouseEnter={() => onProjectHover?.(projectIndex)}
               onMouseLeave={() => onProjectHover?.(null)}

@@ -89,7 +89,7 @@ function App() {
       </header>
 
       <div className="content">
-        <p style={{ marginBottom: "0" }}>
+        {/* <p style={{ marginBottom: "0" }}>
           __
           <ScrambleText
             ref={professionRef}
@@ -97,8 +97,8 @@ function App() {
             as="span"
             timeline
           />
-        </p>
-        <p style={{ marginTop: "0" }}>
+        </p> */}
+        <p className="content-description">
           <ScrambleText
             ref={descriptionRef}
             text={t.description}
@@ -106,14 +106,14 @@ function App() {
             timeline
           />
         </p>
-        <p>
+        {/* <p>
           {" "}
           <ScrambleText ref={emailRef} text={email} as="span" timeline />
           <span ref={cursorRef} className="scramble-cursor" aria-hidden>
             ⇠
           </span>{" "}
-        </p>
-        <p style={{ marginBottom: "0" }}>
+        </p> */}
+        {/* <p style={{ marginBottom: "0" }}>
           __
           <ScrambleText
             ref={projectsTitleRef}
@@ -121,7 +121,7 @@ function App() {
             as="span"
             timeline
           />
-        </p>
+        </p> */}
         <ul className="content-links">
           {projects.map((project, i) => (
             <li
