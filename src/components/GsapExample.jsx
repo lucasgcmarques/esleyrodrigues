@@ -248,41 +248,25 @@ export function GsapExample() {
 
   return (
     <>
-      <div ref={watermarkWrapRef} className="gsap-example-watermark-wrap">
-        <span ref={watermarkTextRef} id="watermark-text">
+      <div
+        ref={watermarkWrapRef}
+        className="flex min-h-screen items-center overflow-hidden"
+      >
+        <span
+          ref={watermarkTextRef}
+          id="watermark-text"
+          className="inline-block font-sans text-[35vw] font-black uppercase leading-none opacity-5 pointer-events-none"
+        >
           Culture
         </span>
       </div>
-      <div ref={wrapRef} className="gsap-example-carousel-wrap">
-        <canvas ref={canvasRef} id="canvas" />
+      <div ref={wrapRef} className="h-screen w-full">
+        <canvas
+          ref={canvasRef}
+          id="canvas"
+          className="block h-full w-full"
+        />
       </div>
-      <style>{`
-        .gsap-example-watermark-wrap {
-          overflow: hidden;
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-        }
-        .gsap-example-watermark-wrap span {
-          display: inline-block;
-          font-size: 35vw;
-          font-family: var(--ff-primary, 'PP Neue Montreal', sans-serif);
-          font-weight: 900;
-          line-height: 1;
-          text-transform: uppercase;
-          opacity: 0.05;
-          pointer-events: none;
-        }
-        .gsap-example-carousel-wrap {
-          width: 100%;
-          height: 100vh;
-        }
-        .gsap-example-carousel-wrap canvas {
-          width: 100%;
-          height: 100%;
-          display: block;
-        }
-      `}</style>
     </>
   );
 }

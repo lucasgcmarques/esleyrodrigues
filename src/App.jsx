@@ -1,6 +1,7 @@
 import { useState, useRef, useMemo, useEffect } from "react";
 import { ScrambleText } from "./components/ScrambleText";
 import { InfiniteImageScroll } from "./components/InfiniteImageScroll";
+import { VerticalCarousel } from "./components/VerticalCarousel";
 import {
   useScrambleTimeline,
   runScrambleAnimation,
@@ -57,48 +58,39 @@ function App() {
   }, [lang, t.profession, t.description, t.projectsTitle]);
 
   return (
-    <div className="layout">
-      <header className="header">
-        <a href="#">
-          <ScrambleText ref={titleRef} text={siteTitle} as="h1" timeline />
-        </a>
-        <div className="header-links">
-          <a href="#">
-            <span>about</span>
+    <div className="flex flex-col min-h-screen">
+      <header className="fixed top-0 left-0 right-0 z-2 flex flex-wrap items-center justify-between border-b border-border bg-white px-6 py-2 text-site font-medium uppercase md:min-h-11 md:h-auto md:flex-row">
+        <div className=" min-w-fit flex-1 ">
+          <a href="#" className="flex items-center justify-start">
+            <ScrambleText ref={titleRef} text={siteTitle} as="h1" timeline />
           </a>
+        </div>
+        <div className="header-links flex flex-wrap items-center justify-end gap-6 px-6">
           {links.map((link) => (
             <a
               key={link.url}
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
+              className="hover:font-semibold min-w-18"
             >
               <ScrambleText text={link.name} as="span" duration={0.6} />
             </a>
           ))}
-          <select
-            className="lang-select"
-            value={lang}
-            onChange={(e) => setLang(e.target.value)}
-            aria-label="Idioma"
-          >
-            <option value="pt">PT</option>
-            <option value="en">EN</option>
-          </select>
         </div>
+        <select
+          className="lang-select order-3 shrink-0 appearance-none cursor-pointer rounded-none border border-border bg-white px-1 py-0.5 font-sans text-site uppercase tracking-wide outline-none focus:outline-none md:order-3 hover:font-semibold"
+          value={lang}
+          onChange={(e) => setLang(e.target.value)}
+          aria-label="Idioma"
+        >
+          <option value="pt">PT</option>
+          <option value="en">EN</option>
+        </select>
       </header>
 
-      <div className="content">
-        {/* <p style={{ marginBottom: "0" }}>
-          __
-          <ScrambleText
-            ref={professionRef}
-            text={t.profession}
-            as="span"
-            timeline
-          />
-        </p> */}
-        <p className="content-description">
+      <div className=" z-1 bg-bg-content text-site font-medium uppercase mx-6 mt-18 max-w-100">
+        <p className="mb-8">
           <ScrambleText
             ref={descriptionRef}
             text={t.description}
@@ -106,31 +98,16 @@ function App() {
             timeline
           />
         </p>
-        {/* <p>
-          {" "}
-          <ScrambleText ref={emailRef} text={email} as="span" timeline />
-          <span ref={cursorRef} className="scramble-cursor" aria-hidden>
-            ⇠
-          </span>{" "}
-        </p> */}
-        {/* <p style={{ marginBottom: "0" }}>
-          __
-          <ScrambleText
-            ref={projectsTitleRef}
-            text={t.projectsTitle}
-            as="span"
-            timeline
-          />
-        </p> */}
-        <ul className="content-links">
-          {projects.map((project, i) => (
-            <li
-              key={project.url}
-              className={hoveredProjectIndex === i ? "hovered" : ""}
-              onMouseEnter={() => setHoveredProjectIndex(i)}
-              onMouseLeave={() => setHoveredProjectIndex(null)}
-            >
-              <a href={project.url} target="_blank" rel="noopener noreferrer">
+
+        <ul className="flex flex-col">
+          {projects.map((project) => (
+            <li key={project.url} className={`list-none `}>
+              <a
+                href={project.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`flex items-center justify-start mb-0.5 hover:font-semibold`}
+              >
                 <ScrambleText
                   text={project.name}
                   as="span"
@@ -143,24 +120,12 @@ function App() {
         </ul>
       </div>
 
+      {/* <VerticalCarousel /> */}
       <InfiniteImageScroll
         projects={projects}
         hoveredProjectIndex={hoveredProjectIndex}
         onProjectHover={setHoveredProjectIndex}
       />
-
-      <footer className="footer">
-        {links.map((link) => (
-          <a
-            key={link.url}
-            href={link.url}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <ScrambleText text={link.name} as="span" duration={0.6} />
-          </a>
-        ))}
-      </footer>
     </div>
   );
 }

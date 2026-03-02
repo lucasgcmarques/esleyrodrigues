@@ -1,18 +1,8 @@
-import { useRef, useEffect, useMemo } from "react";
+import { useRef, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
-
-// Grid 12 colunas; altura do item vem do aspect-ratio de cada imagem
-const GRID_LAYOUTS = [
-  { gridColumn: "1 / -1" },
-  { gridColumn: "2 / span 8" },
-  { gridColumn: "4 / span 8" },
-  { gridColumn: "1 / -1" },
-  { gridColumn: "4 / span 8" },
-  { gridColumn: "2 / span 8" },
-];
 
 export function InfiniteImageScroll({
   projects = [],
@@ -26,67 +16,29 @@ export function InfiniteImageScroll({
 
   const duplicatedProjects = [...projects, ...projects];
 
-  // Mesmo layout para item i e i+n para o loop infinito bater
-  const layoutConfigs = useMemo(
-    () =>
-      Array.from({ length: projects.length }, (_, i) =>
-        GRID_LAYOUTS[i % GRID_LAYOUTS.length]
-      ),
-    [projects.length]
-  );
-
-  // Scroll da página inteira controla o carrossel de imagens
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
 
     const handleWheel = (e) => {
-      if (el.contains(e.target)) return; // já está sobre as imagens, deixa o scroll nativo
+      if (el.contains(e.target)) return;
       e.preventDefault();
       el.scrollTop += e.deltaY;
     };
 
     document.addEventListener("wheel", handleWheel, { passive: false });
-    return () => document.removeEventListener("wheel", handleWheel, { passive: false });
+    return () =>
+      document.removeEventListener("wheel", handleWheel, { passive: false });
   }, []);
 
   useEffect(() => {
     const el = scrollRef.current;
     const content = contentRef.current;
-    if (!el || !content || !layoutConfigs.length) return;
+    if (!el || !content || !projects.length) return;
 
-    const imageTweens = [];
-
-    // Parallax no estilo GreenSock: imagem move mais devagar que o scroll (speed ~0.6)
-    const items = content.querySelectorAll(".infinite-scroll-item");
-    items.forEach((item) => {
-      const img = item.querySelector("img");
-      if (!img) return;
-
-      const tween = gsap.fromTo(
-        img,
-        { "--img-y": "0%" },
-        {
-          "--img-y": "-12%",
-          ease: "none",
-          scrollTrigger: {
-            scroller: el,
-            trigger: item,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: true,
-          },
-        },
-      );
-
-      imageTweens.push(tween);
-    });
-
-    let innerRafId;
     const rafId = requestAnimationFrame(() => {
-      innerRafId = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         const singleSetHeight = content.offsetHeight / 2;
-
         scrollTriggerRef.current = ScrollTrigger.create({
           scroller: el,
           trigger: content,
@@ -94,7 +46,6 @@ export function InfiniteImageScroll({
           end: "bottom bottom",
           onUpdate: () => {
             if (isAdjustingRef.current) return;
-
             const scrollTop = el.scrollTop;
 
             if (scrollTop > singleSetHeight) {
@@ -117,45 +68,69 @@ export function InfiniteImageScroll({
 
     return () => {
       cancelAnimationFrame(rafId);
-      if (innerRafId != null) cancelAnimationFrame(innerRafId);
-      imageTweens.forEach((tween) => tween.kill());
       scrollTriggerRef.current?.kill();
     };
-  }, [projects.length, layoutConfigs.length]);
+  }, [projects.length]);
+
+  // Altura 700–900px; largura proporcional com teto para não estourar os horizontais
+  const MIN_H = 700;
+  const MAX_H = 500;
+  const REF_HEIGHT = 500;
+  const MAX_W = 600; // limita largura dos mais horizontais
+
+  function sizeFromAspectRatio(ar) {
+    let width = Math.round(REF_HEIGHT * ar);
+    let height = REF_HEIGHT;
+    if (width > MAX_W) {
+      width = MAX_W;
+      height = Math.round(MAX_W / ar);
+    }
+    // Garante altura no intervalo quando não limitamos por largura
+    if (height > MAX_H) {
+      height = MAX_H;
+      width = Math.round(MAX_H * ar);
+    }
+    return { width, height };
+  }
 
   if (!projects.length) return null;
 
   return (
-    <div className="infinite-scroll-wrap" ref={scrollRef}>
-      <div className="infinite-scroll-content" ref={contentRef}>
+    <div
+      className="infinite-scroll-wrap fixed top-0 bottom-0 right-50  z-0 overflow-x-hidden overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden "
+      ref={scrollRef}
+    >
+      <div
+        className="infinite-scroll-content flex w-full max-w-[90vw] mx-auto flex-col items-start  "
+        ref={contentRef}
+      >
         {duplicatedProjects.map((project, i) => {
           const projectIndex = i % projects.length;
-          const layout = layoutConfigs[projectIndex];
           const isHovered = hoveredProjectIndex === projectIndex;
-          const imageUrl =
-            project.image ||
-            `https://picsum.photos/1200/800?random=${projectIndex + 1}`;
+          const imageUrl = project.image;
           const w = project.width ?? 16;
           const h = project.height ?? 9;
           const aspectRatio = w / h;
-          // Limita tamanho sem distorcer: maxHeight 800px => maxWidth = 800 * aspectRatio; cap também em 1000px
-          const maxHeightPx = 800;
-          const maxWidthPx = Math.min(1000, maxHeightPx * aspectRatio);
+          const { width: widthPx, height: heightPx } =
+            sizeFromAspectRatio(aspectRatio);
+
           return (
             <div
               key={`${project.url}-${i}`}
-              className={`infinite-scroll-item ${isHovered ? "hovered" : ""}`}
+              className={`group infinite-scroll-item relative cursor-pointer overflow-hidden shrink-0 ${isHovered ? "hovered" : ""}`}
               style={{
-                gridColumn: layout.gridColumn,
-                aspectRatio,
-                width: "100%",
-                maxWidth: `${maxWidthPx}px`,
-                margin: "0 auto",
+                height: `${heightPx}px`,
+                width: `${widthPx}px`,
               }}
               onMouseEnter={() => onProjectHover?.(projectIndex)}
               onMouseLeave={() => onProjectHover?.(null)}
             >
-              <img src={imageUrl} alt="" loading="lazy" />
+              <img
+                src={imageUrl}
+                className="w-full h-full object-cover object-center block"
+                alt=""
+                loading="lazy"
+              />
               <span className="infinite-scroll-play" aria-hidden="true" />
             </div>
           );
