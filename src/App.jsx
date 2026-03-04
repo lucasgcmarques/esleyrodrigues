@@ -15,9 +15,17 @@ import {
   texts,
 } from "./data";
 
+import { gsap } from "gsap";
+
+import { useGSAP } from "@gsap/react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+gsap.registerPlugin(useGSAP, ScrollTrigger);
+
 function App() {
   const [lang, setLang] = useState("pt");
   const t = texts[lang];
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [showSplash, setShowSplash] = useState(true);
 
   const titleRef = useRef(null);
   const professionRef = useRef(null);
@@ -37,9 +45,56 @@ function App() {
     [t.profession, t.description, t.projectsTitle],
   );
 
-  useScrambleTimeline(timelineElements, cursorRef);
-  const { projects: vimeoProjects } = useVimeoApi();
+  const container = useRef(null);
+  const boxRef = useRef(null);
+
+  useGSAP(
+    () => {
+      gsap.fromTo(
+        boxRef.current,
+        { x: 200, opacity: 0 },
+        {
+          x: 0,
+          opacity: 1,
+          rotation: 0,
+          duration: 3.2,
+          ease: "power3.out",
+        },
+      );
+    },
+    { scope: container },
+  );
+
+  // Roda o texto animado apenas quando o conteúdo principal já está visível
+  useScrambleTimeline(showSplash ? [] : timelineElements, cursorRef);
+  const { projects: vimeoProjects, loading: vimeoLoading } = useVimeoApi();
   const projects = vimeoProjects?.length > 0 ? vimeoProjects : staticProjects;
+
+  // Splash de loading com contador até 100
+  useEffect(() => {
+    if (!showSplash) return;
+
+    const interval = setInterval(() => {
+      setLoadingProgress((prev) => {
+        if (prev >= 99) return prev;
+        return prev + 1;
+      });
+    }, 40);
+
+    return () => clearInterval(interval);
+  }, [showSplash]);
+
+  useEffect(() => {
+    if (vimeoLoading) return;
+
+    // Quando terminar de carregar os projetos, finaliza o contador e esconde o splash
+    const timeout = setTimeout(() => {
+      setLoadingProgress(100);
+      setShowSplash(false);
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [vimeoLoading]);
 
   // Quando trocar o idioma, ativa o scramble apenas nos textos que mudam
   const prevLangRef = useRef(lang);
@@ -56,6 +111,14 @@ function App() {
       runScrambleAnimation(projectsTitleRef.current, t.projectsTitle, duration);
   }, [lang, t.profession, t.description, t.projectsTitle]);
 
+  if (showSplash) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black text-white">
+        <span className="text-6xl font-mono">{loadingProgress}</span>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <SiteHeader
@@ -65,7 +128,16 @@ function App() {
         onChangeLang={setLang}
         titleRef={titleRef}
       />
-      <MainContent t={t} projects={projects} descriptionRef={descriptionRef} />
+      <div ref={container} className="fixed top-0 bottom-0 left-0 right-0 z-1">
+        <div ref={boxRef} className="box">
+          <MainContent
+            t={t}
+            projects={projects}
+            descriptionRef={descriptionRef}
+          />
+        </div>
+      </div>
+
       <ProjectsScroll projects={projects} />
     </div>
   );

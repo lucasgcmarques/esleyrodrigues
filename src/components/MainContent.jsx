@@ -2,7 +2,7 @@ import { ScrambleText } from "./ScrambleText";
 
 export function MainContent({ t, projects, descriptionRef }) {
   return (
-    <div className="fixed top-0 bottom-0 left-0 right-0 z-1 bg-bg-content text-site font-medium uppercase mx-6 mt-18 max-w-100">
+    <div className=" bg-amber-100 text-site font-medium uppercase mx-6 mt-18 max-w-100 h-full">
       <p className="mb-8">
         <ScrambleText
           ref={descriptionRef}

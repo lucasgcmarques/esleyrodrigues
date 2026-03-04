@@ -32,6 +32,8 @@ export function runScrambleAnimation(el, text, duration = 0.6) {
 
 export function useScrambleTimeline(elements, cursorRef) {
   useLayoutEffect(() => {
+    if (!elements || elements.length === 0) return;
+
     const cursorEl = cursorRef?.current;
     const cursorTl = gsap.timeline({ repeat: -1 });
     if (cursorEl) {
@@ -67,5 +69,5 @@ export function useScrambleTimeline(elements, cursorRef) {
     });
 
     if (cursorEl) tl.add(cursorTl, 0);
-  }, []); // roda uma vez no mount
+  }, [elements, cursorRef]); // refaz quando os elementos existirem
 }
