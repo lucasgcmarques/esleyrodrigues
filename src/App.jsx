@@ -128,18 +128,32 @@ function App() {
         onChangeLang={setLang}
         titleRef={titleRef}
       />
-      {/* <div ref={container} className="fixed top-0 bottom-0 left-0 right-0 z-1">
-        <div ref={boxRef} className="box">
-          <MainContent
-            t={t}
-            projects={projects}
-            descriptionRef={descriptionRef}
-          />
-        </div>
-      </div> */}
-
       <ProjectsScroll projects={projects} />
-      <div className="h-dvh border-t border-black"></div>
+      <footer className="h-dvh border-t border-gray-300">
+        <div className="h-2/3 flex items-center justify-center footer-title">
+          <h2>footer</h2>
+        </div>
+        {/* Divisor */}
+        <div className="h-1/3 flex items-start justify-evenly footer-title border-t border-gray-300 ">
+          <div className="w-content min-h-1/2  flex  flex-col items-start my-auto">
+            <h2 className="text-3xl font-bold mb-auto">Get in touch</h2>{" "}
+            <a href={`mailto:${email}`}>{email}</a>
+            <p className="">São Paulo, Brazil</p>
+          </div>
+          <div className="min-h-1/2 min-w-20  my-auto flex items-end">
+            <ul>
+              <li className="flex items-center justify-start">
+                <a href="https://www.instagram.com/esleyrodrigues/">
+                  Instagram
+                </a>
+              </li>
+              <li className="flex items-center justify-start">
+                <a href="https://vimeo.com/esleyrodrigues">Vimeo</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
