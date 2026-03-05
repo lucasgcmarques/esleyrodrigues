@@ -1,10 +1,62 @@
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
+function getVimeoId(url) {
+  if (!url) return null;
+  const match = url.match(/vimeo\.com\/(?:.*\/)?(\d{7,})/);
+  return match ? match[1] : null;
+}
+
 export function ProjectsScroll({ projects = [] }) {
+  const [selectedProject, setSelectedProject] = useState(null);
+  const overlayImageRef = useRef(null);
+  const overlayVideoRef = useRef(null);
+
+  const handleCardClick = (e, project) => {
+    const card = e.currentTarget;
+    const imgEl = card.querySelector(".project-box img");
+    if (!imgEl) return;
+    const rect = imgEl.getBoundingClientRect();
+    setSelectedProject({ project, rect });
+  };
+
+  useEffect(() => {
+    if (!selectedProject) return;
+    const img = overlayImageRef.current;
+    const vid = overlayVideoRef.current;
+    if (!img || !selectedProject.rect) return;
+    const { rect, project } = selectedProject;
+    const pw = project.width ?? 1920;
+    const ph = project.height ?? 1080;
+    const isPortrait = ph > pw;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const endWidth = vw;
+    const endHeight = isPortrait ? vw * (ph / pw) : vh;
+
+    gsap.set(img, {
+      left: rect.left,
+      top: rect.top,
+      width: rect.width,
+      height: rect.height,
+      opacity: 1,
+    });
+    gsap.set(vid, { opacity: 0 });
+    const tl = gsap.timeline();
+    tl.to(img, {
+      left: 0,
+      top: 0,
+      width: endWidth,
+      height: endHeight,
+      duration: 0.5,
+      ease: "power2.inOut",
+    }).to(vid, { opacity: 1, duration: 0.25 }, "-=0.15");
+    return () => tl.kill();
+  }, [selectedProject]);
+
   useEffect(() => {
     if (!projects.length) return;
 
@@ -134,12 +186,11 @@ export function ProjectsScroll({ projects = [] }) {
           );
 
           return (
-            <a
+            <button
               key={project.url}
-              href={project.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group block"
+              type="button"
+              onClick={(e) => handleCardClick(e, project)}
+              className="group block text-left w-full cursor-pointer border-0 p-0 bg-transparent"
             >
               <div
                 className="project-box relative overflow-hidden "
@@ -155,10 +206,67 @@ export function ProjectsScroll({ projects = [] }) {
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02] "
                 />
               </div>
-            </a>
+            </button>
           );
         })}
       </div>
+
+      {selectedProject && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center  overflow-visible"
+          style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Vídeo: ${selectedProject.project.name}`}
+          onClick={() => setSelectedProject(null)}
+        >
+          <img
+            ref={overlayImageRef}
+            src={selectedProject.project.image}
+            alt=""
+            className="fixed object-cover pointer-events-none"
+            style={{
+              left: selectedProject.rect.left,
+              top: selectedProject.rect.top,
+              width: selectedProject.rect.width,
+              height: selectedProject.rect.height,
+            }}
+            aria-hidden="true"
+          />
+          <div
+            ref={overlayVideoRef}
+            className="relative z-10 w-full max-w-6xl aspect-video mx-4 rounded overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {getVimeoId(selectedProject.project.url) ? (
+              <iframe
+                src={`https://player.vimeo.com/video/${getVimeoId(selectedProject.project.url)}?autoplay=1`}
+                title={selectedProject.project.name}
+                className="w-full h-full"
+                allow="autoplay; fullscreen; picture-in-picture"
+                allowFullScreen
+              />
+            ) : (
+              <a
+                href={selectedProject.project.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center w-full h-full bg-black/80 text-white text-lg"
+              >
+                Abrir: {selectedProject.project.url}
+              </a>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setSelectedProject(null)}
+            className="absolute top-4 right-4 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors text-2xl leading-none backdrop-blur-sm"
+            aria-label="Fechar"
+          >
+            ×
+          </button>
+        </div>
+      )}
     </div>
   );
 }
