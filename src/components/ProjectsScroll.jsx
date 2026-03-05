@@ -16,13 +16,12 @@ export function ProjectsScroll({ projects = [] }) {
         const img = box.querySelector("img");
         if (!img) return;
 
-        const originalWidth = parseInt(box.dataset.width, 10);
-        const originalHeight = parseInt(box.dataset.height, 10);
-        if (Number.isNaN(originalWidth) || Number.isNaN(originalHeight)) return;
-        const smallW = originalWidth * 1;
-        const smallH = originalHeight * 1;
-        const bigW = originalWidth * 1.8;
-        const bigH = originalHeight * 1.8;
+        const smallW = parseInt(box.dataset.width, 10);
+        const smallH = parseInt(box.dataset.height, 10);
+        const scaleFactor = parseFloat(box.dataset.scale, 10) || 1.8;
+        if (Number.isNaN(smallW) || Number.isNaN(smallH)) return;
+        const bigW = smallW * scaleFactor;
+        const bigH = smallH * scaleFactor;
 
         // Todas começam pequenas para terem a mesma animação de scale
         gsap.set(box, {
@@ -33,8 +32,8 @@ export function ProjectsScroll({ projects = [] }) {
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: box,
-            start: "top 70%",
-            end: "bottom 40%",
+            start: "top 85%",
+            end: "bottom 25%",
             scrub: 1,
             invalidateOnRefresh: true,
             markers: true,
@@ -90,27 +89,30 @@ export function ProjectsScroll({ projects = [] }) {
 
   if (!projects.length) return null;
 
-  const MAX_W = 500;
-  const MAX_H = 300;
   const GAP = 20;
+  /** Largura fixa no tamanho pequeno; altura proporcional para manter proporção original (sem bordas pretas) */
+  const SMALL_WIDTH = 320;
 
-  // Altura mínima = conteúdo no tamanho original (evita glitch no fim sem espaço excessivo)
+  function getSmallDimensions(origW, origH) {
+    const smallH = Math.round((SMALL_WIDTH / origW) * origH);
+    const isLandscape = origW >= origH;
+    const scaleFactor = isLandscape ? 2.8 : 1.45;
+    return { smallW: SMALL_WIDTH, smallH, scaleFactor };
+  }
+
+  // Altura mínima = soma das alturas no tamanho pequeno
   const totalMinHeight =
     projects.reduce((acc, project) => {
       if (!project.image) return acc;
       const origW = project.width ?? 1920;
       const origH = project.height ?? 1080;
-      let scale = 1;
-      if (origW > MAX_W || origH > MAX_H) {
-        scale = Math.min(MAX_W / origW, MAX_H / origH);
-      }
-      const h = Math.round(origH * scale);
-      return acc + h + GAP;
+      const { smallH } = getSmallDimensions(origW, origH);
+      return acc + smallH + GAP;
     }, 0) + 80;
 
   return (
     <div className="flex mx-6 " style={{ minHeight: totalMinHeight }}>
-      <div className="projects-list sticky top-100 self-start mb-25  min-w-80">
+      <div className="projects-list sticky top-[500px] self-start mb-25  min-w-80">
         <ul className="flex flex-col items-start">
           {projects.map((project) => (
             <li key={project.url} className="project-list-item">
@@ -121,18 +123,15 @@ export function ProjectsScroll({ projects = [] }) {
           ))}
         </ul>
       </div>
-      <div className=" mt-[300px] flex flex-col items-start gap-5 mb-20 ml-10 md:ml-50  bg-blue-50">
+      <div className=" mt-[500px] flex flex-col items-start gap-5 mb-20 ml-10 md:ml-50  bg-blue-50">
         {projects.map((project) => {
           if (!project.image) return null;
           const origW = project.width ?? 1920;
           const origH = project.height ?? 1080;
-
-          let scale = 1;
-          if (origW > MAX_W || origH > MAX_H) {
-            scale = Math.min(MAX_W / origW, MAX_H / origH);
-          }
-          const w = Math.round(origW * scale);
-          const h = Math.round(origH * scale);
+          const { smallW, smallH, scaleFactor } = getSmallDimensions(
+            origW,
+            origH,
+          );
 
           return (
             <a
@@ -144,9 +143,10 @@ export function ProjectsScroll({ projects = [] }) {
             >
               <div
                 className="project-box relative overflow-hidden "
-                style={{ width: `${w}px`, height: `${h}px` }}
-                data-width={w}
-                data-height={h}
+                style={{ width: `${smallW}px`, height: `${smallH}px` }}
+                data-width={smallW}
+                data-height={smallH}
+                data-scale={scaleFactor}
               >
                 <img
                   src={project.image}
