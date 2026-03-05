@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "PP Neue Montreal", sans-serif;
+  --font-sans:
+    "Jost", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   /* Garantir que os pesos de fonte estejam disponíveis para font-medium, font-bold, etc. */
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
@@ -39,6 +40,28 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: font-weight 0.6s;
+  }
+
+  a:hover {
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .wordAnimated {
+    font-weight: 100;
+    font-size: 100vw;
+    line-height: 100vw;
+    font-variation-settings:
+      "wght" 100,
+      "wdth" 85;
+  }
+  .wordAnimated.char {
+    --delay: calc((var(--char-index) +1) * 400ms);
+    animation: breath 4000ms infinite both;
+    animation-delay: var(--delay);
+  }
+  .wordAnimated:hover span {
+    animation-play-state: paused;
   }
 }
 

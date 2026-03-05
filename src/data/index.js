@@ -85,7 +85,7 @@ export const projects = [
 ];
 
 export const links = [
-  { name: "about", url: "https://vimeo.com/esleyrodrigues" },
+  { name: "About", url: "https://vimeo.com/esleyrodrigues" },
   { name: "Contact", url: "https://vimeo.com/esleyrodrigues" },
 ];
 

@@ -1,16 +1,16 @@
 import { ScrambleText } from "./ScrambleText";
 
-export function MainContent({ t, projects, descriptionRef }) {
+export function MainContent({ projects }) {
   return (
     <div className=" bg-amber-100 text-site font-medium uppercase mx-6 mt-18 max-w-100 h-full">
-      <p className="mb-8">
+      {/* <p className="mb-8">
         <ScrambleText
           ref={descriptionRef}
           text={t.description}
           as="span"
           timeline
         />
-      </p>
+      </p> */}
 
       <ul className="flex flex-col">
         {projects.map((project) => (
