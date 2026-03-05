@@ -139,7 +139,7 @@ function App() {
       </div> */}
 
       <ProjectsScroll projects={projects} />
-      <div className="h-dvh bg-green-500"></div>
+      <div className="h-dvh border-t border-black"></div>
     </div>
   );
 }

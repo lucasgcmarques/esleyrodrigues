@@ -36,6 +36,7 @@ export function ProjectsScroll({ projects = [] }) {
     const vh = window.innerHeight;
     const endWidth = vw;
     const endHeight = isPortrait ? vw * (ph / pw) : vh;
+    const endTop = isPortrait ? (vh - endHeight) / 2 : 0;
 
     gsap.set(img, {
       left: rect.left,
@@ -48,11 +49,13 @@ export function ProjectsScroll({ projects = [] }) {
     const tl = gsap.timeline();
     tl.to(img, {
       left: 0,
-      top: 0,
+      top: endTop,
       width: endWidth,
       height: endHeight,
       duration: 0.5,
       ease: "power2.inOut",
+      opacity: 0.3,
+      filter: "blur(50px)",
     }).to(vid, { opacity: 1, duration: 0.25 }, "-=0.15");
     return () => tl.kill();
   }, [selectedProject]);
@@ -105,14 +108,13 @@ export function ProjectsScroll({ projects = [] }) {
           duration: 0.5,
           ease: "none",
         })
-          // .to(listItems[i], { opacity: 0.5, duration: 0 }, 0.5)
+
           .to(box, {
             width: smallW,
             height: smallH,
             duration: 0.5,
             ease: "none",
           });
-        // .to(listItems[i], { opacity: 1, duration: 0 }, 1);
       });
 
       const projectsList = gsap.utils.toArray(".projects-list");
@@ -213,13 +215,13 @@ export function ProjectsScroll({ projects = [] }) {
 
       {selectedProject && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center  overflow-visible"
-          style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-visible"
           role="dialog"
           aria-modal="true"
           aria-label={`Vídeo: ${selectedProject.project.name}`}
           onClick={() => setSelectedProject(null)}
         >
+          <div className="fixed inset-0 bg-black" aria-hidden="true" />
           <img
             ref={overlayImageRef}
             src={selectedProject.project.image}
