@@ -10,10 +10,145 @@ function getVimeoId(url) {
   return match ? match[1] : null;
 }
 
+function clamp01(n) {
+  return Math.max(0, Math.min(1, n));
+}
+
+function HoverDistortText({ text }) {
+  const containerRef = useRef(null);
+  const charRefs = useRef([]);
+  const metricsRef = useRef(null);
+  const rafRef = useRef(0);
+  const isActiveRef = useRef(false);
+
+  const SCALE_X_MIN = 0.92;
+  const SCALE_X_MAX = 1.08;
+  const SKEW_MAX_DEG = 10;
+
+  const measure = () => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const centers = charRefs.current.map((el) => {
+      if (!el) return 0;
+      const r = el.getBoundingClientRect();
+      return r.left - containerRect.left + r.width / 2;
+    });
+
+    metricsRef.current = {
+      left: containerRect.left,
+      width: containerRect.width,
+      centers,
+    };
+  };
+
+  const reset = () => {
+    charRefs.current.forEach((el) => {
+      if (!el) return;
+      el.style.transform = "";
+    });
+  };
+
+  const update = (xLocal) => {
+    const metrics = metricsRef.current;
+    if (!metrics) return;
+
+    const maxDist = Math.max(1, metrics.width);
+    const { centers } = metrics;
+
+    for (let i = 0; i < centers.length; i++) {
+      const el = charRefs.current[i];
+      if (!el) continue;
+
+      const d = Math.abs(xLocal - centers[i]);
+      const closeness = clamp01(1 - d / maxDist);
+
+      const scaleX = SCALE_X_MIN + closeness * (SCALE_X_MAX - SCALE_X_MIN);
+      const skewX = -SKEW_MAX_DEG * closeness;
+
+      el.style.transform = `scaleX(${scaleX.toFixed(3)}) skewX(${skewX.toFixed(
+        2,
+      )}deg)`;
+    }
+  };
+
+  const scheduleUpdate = (xLocal) => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => update(xLocal));
+  };
+
+  const handlePointerEnter = () => {
+    isActiveRef.current = true;
+    measure();
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isActiveRef.current || !metricsRef.current) return;
+    const xLocal = e.clientX - metricsRef.current.left;
+    scheduleUpdate(xLocal);
+  };
+
+  const handlePointerLeave = () => {
+    isActiveRef.current = false;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = 0;
+    reset();
+  };
+
+  useEffect(() => {
+    const onReflow = () => {
+      if (!isActiveRef.current) return;
+      requestAnimationFrame(() => measure());
+    };
+
+    window.addEventListener("resize", onReflow, { passive: true });
+    window.addEventListener("scroll", onReflow, { passive: true });
+    return () => {
+      window.removeEventListener("resize", onReflow);
+      window.removeEventListener("scroll", onReflow);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
+  return (
+    <span
+      ref={containerRef}
+      className="project-distort-text"
+      role="text"
+      aria-label={text}
+      onPointerEnter={handlePointerEnter}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+      onFocus={handlePointerEnter}
+      onBlur={handlePointerLeave}
+    >
+      {Array.from(text).map((ch, i) => (
+        <span
+          key={`${ch}-${i}`}
+          ref={(el) => {
+            charRefs.current[i] = el;
+          }}
+          aria-hidden="true"
+          className="project-distort-char"
+        >
+          {ch === " " ? "\u00A0" : ch}
+        </span>
+      ))}
+    </span>
+  );
+}
+
 export function ProjectsScroll({ projects = [] }) {
   const [selectedProject, setSelectedProject] = useState(null);
   const overlayImageRef = useRef(null);
   const overlayVideoRef = useRef(null);
+  const [enableListHoverDistort, setEnableListHoverDistort] = useState(false);
 
   const handleCardClick = (e, project) => {
     const card = e.currentTarget;
@@ -132,6 +267,23 @@ export function ProjectsScroll({ projects = [] }) {
     };
   }, [projects.length]);
 
+  useEffect(() => {
+    const hoverMql = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const reduceMql = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    const update = () => {
+      setEnableListHoverDistort(hoverMql.matches && !reduceMql.matches);
+    };
+
+    update();
+    hoverMql.addEventListener("change", update);
+    reduceMql.addEventListener("change", update);
+    return () => {
+      hoverMql.removeEventListener("change", update);
+      reduceMql.removeEventListener("change", update);
+    };
+  }, []);
+
   if (!projects.length) return null;
 
   const GAP = 20;
@@ -169,7 +321,11 @@ export function ProjectsScroll({ projects = [] }) {
           {projects.map((project) => (
             <li key={project.url} className="project-list-item">
               <a href={project.url} target="_blank" rel="noopener noreferrer">
-                {project.name}
+                {enableListHoverDistort ? (
+                  <HoverDistortText text={project.name} />
+                ) : (
+                  project.name
+                )}
               </a>
             </li>
           ))}
@@ -206,7 +362,7 @@ export function ProjectsScroll({ projects = [] }) {
               <button
                 type="button"
                 onClick={(e) => handleCardClick(e, project)}
-                className="group block text-left w-full cursor-pointer border-0 p-0 bg-transparent"
+                className="group block text-left  cursor-pointer border-0 p-0 bg-transparent"
               >
                 <div
                   className="project-box relative overflow-hidden mx-auto lg:mx-0"

@@ -109,3 +109,16 @@
 }
 
 /* (estilos do infinite scroll removidos) */
+
+/* Hover distort (Projects list) */
+.project-distort-text {
+  display: inline-block;
+  transform: translateZ(0);
+}
+
+.project-distort-char {
+  display: inline-block;
+  will-change: transform;
+  transform-origin: center bottom;
+  transition: transform 70ms linear;
+}
