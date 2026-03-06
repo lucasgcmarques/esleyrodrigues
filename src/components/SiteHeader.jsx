@@ -6,7 +6,7 @@ export function SiteHeader({ siteTitle, links, lang, onChangeLang, titleRef }) {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-100 flex flex-wrap items-center justify-between border-b border-b-gray-200 bg-white px-4 py-2 text-site font-medium md:min-h-11 md:h-auto md:flex-row md:px-6">
-      <div className="min-w-fit w-[520px]  flex justify-center md:justify-start md:flex-initial">
+      <div className="w-full md:w-[520px] flex justify-center md:justify-start md:flex-initial">
         <a href="#" className="flex items-center font-medium text-lg">
           <ScrambleText ref={titleRef} text={siteTitle} as="h1" timeline />
         </a>
@@ -21,8 +21,10 @@ export function SiteHeader({ siteTitle, links, lang, onChangeLang, titleRef }) {
               <a
                 key={link.url}
                 href={link.url}
-                {...(isAnchor ? {} : { target: "_blank", rel: "noopener noreferrer" })}
-                className="font-medium  text-lg bg-amber-200 min-w-18"
+                {...(isAnchor
+                  ? {}
+                  : { target: "_blank", rel: "noopener noreferrer" })}
+                className="font-medium  text-lg min-w-18 text-left"
               >
                 <ScrambleText text={link.name} as="span" duration={0.6} />
               </a>
@@ -106,7 +108,9 @@ export function SiteHeader({ siteTitle, links, lang, onChangeLang, titleRef }) {
                   <li key={link.url}>
                     <a
                       href={link.url}
-                      {...(isAnchor ? {} : { target: "_blank", rel: "noopener noreferrer" })}
+                      {...(isAnchor
+                        ? {}
+                        : { target: "_blank", rel: "noopener noreferrer" })}
                       className="font-medium text-lg"
                       onClick={() => setMenuOpen(false)}
                     >

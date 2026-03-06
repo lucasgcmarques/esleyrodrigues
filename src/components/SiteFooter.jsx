@@ -19,6 +19,8 @@ export function SiteFooter({ email }) {
     title.classList.add("flex", "stroke");
 
     let maxDist = 0;
+    const SCALE_X_MIN = 0.9;
+    const SCALE_X_MAX = 1.1;
     const mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
     const cursor = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 
@@ -46,11 +48,20 @@ export function SiteFooter({ email }) {
           },
           update(opts) {
             const d = this.getDist();
-            const wdth = opts.wdth ? ~~this.getAttr(d, 5, 200) : 100;
-            const wght = opts.wght ? ~~this.getAttr(d, 100, 800) : 400;
             const alpha = opts.alpha ? this.getAttr(d, 0, 1).toFixed(2) : 1;
-            const ital = opts.ital ? this.getAttr(d, 0, 1).toFixed(2) : 0;
-            this.span.style.cssText = `opacity: ${alpha}; font-variation-settings: 'wght' ${wght}, 'wdth' ${wdth}, 'ital' ${ital};`;
+
+            const closeness = maxDist ? Math.max(0, 1 - d / maxDist) : 0;
+            const fontWeight = opts.wght
+              ? Math.round(100 + closeness * 800)
+              : 400;
+            const scaleX = opts.wdth
+              ? (SCALE_X_MIN + closeness * (SCALE_X_MAX - SCALE_X_MIN)).toFixed(
+                  3,
+                )
+              : "1";
+            const skewX = opts.ital ? (-12 * closeness).toFixed(2) : "0";
+
+            this.span.style.cssText = `opacity: ${alpha}; font-weight: ${fontWeight}; transform: scaleX(${scaleX}) skewX(${skewX}deg); transform-origin: center bottom;`;
           },
         });
       }
@@ -60,10 +71,36 @@ export function SiteFooter({ email }) {
       const container = title.parentElement;
       const rect = container ? container.getBoundingClientRect() : null;
       const height = rect ? rect.height : window.innerHeight * (2 / 3);
+      const width = rect ? rect.width : window.innerWidth;
       const lineCount = lines.length;
       const lineHeight = 0.8;
-      const fontSize = (height * 0.92) / (lineCount * lineHeight);
+
+      // 1) Começa ajustando pelo height (como antes)
+      let fontSize = (height * 0.92) / (lineCount * lineHeight);
       title.style.fontSize = `${fontSize}px`;
+
+      // 2) Agora limita pelo width: garante que a soma das letras (com SCALE_X_MAX)
+      //    nunca ultrapasse o container, evitando overflow horizontal.
+      for (let pass = 0; pass < 2; pass++) {
+        let maxLineSum = 0;
+        const lineEls = title.querySelectorAll(".footer-compressa-line");
+        lineEls.forEach((lineEl) => {
+          let sum = 0;
+          Array.from(lineEl.children).forEach((child) => {
+            const r = child.getBoundingClientRect();
+            sum += r.width * SCALE_X_MAX;
+          });
+          if (sum > maxLineSum) maxLineSum = sum;
+        });
+
+        if (maxLineSum > 0 && width > 0 && maxLineSum > width) {
+          const ratio = width / maxLineSum;
+          fontSize *= ratio * 0.98; // folga pequena para não encostar
+          title.style.fontSize = `${fontSize}px`;
+        } else {
+          break;
+        }
+      }
     };
 
     const render = () => {
@@ -116,7 +153,7 @@ export function SiteFooter({ email }) {
       </div>
       {/* Divisor: centralizado em mobile/tablet */}
       <div className="h-1/3 flex flex-col lg:flex-row lg:mx-6 lg:pl-[520px] items-center justify-center lg:items-start lg:justify-between gap-6 lg:gap-0 footer-title border-t border-gray-300 py-6 lg:py-0">
-        <div className="w-content lg:min-h-1/2 flex flex-col items-center lg:items-start my-auto text-center lg:text-left bg-amber-50">
+        <div className="w-content lg:min-h-1/2 flex flex-col items-center lg:items-start my-auto text-center lg:text-left ">
           <h2 className="text-3xl font-bold mb-2 lg:mb-auto">Get in touch</h2>
           <a href={`mailto:${email}`}>{email}</a>
           <p>São Paulo, Brazil</p>
