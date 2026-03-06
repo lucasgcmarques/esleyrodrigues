@@ -20,6 +20,7 @@
 
 @layer base {
   html {
+    scroll-behavior: smooth;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -63,6 +64,53 @@
   .wordAnimated:hover span {
     animation-play-state: paused;
   }
+}
+
+/* Compressa VF - footer title animation */
+@font-face {
+  font-family: "Compressa VF";
+  font-style: normal;
+  src: url("https://res.cloudinary.com/dr6lvwubh/raw/upload/v1529908256/CompressaPRO-GX.woff2")
+    format("woff2");
+}
+
+.footer-compressa-title {
+  font-family: "Compressa VF", var(--font-sans);
+  text-rendering: optimizeSpeed;
+  color: #000;
+  width: 100%;
+  user-select: none;
+  line-height: 0.8em;
+  margin: 0 auto;
+  text-transform: uppercase;
+  font-weight: 100;
+  text-align: center;
+}
+.footer-compressa-title.flex {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+}
+.footer-compressa-title .footer-compressa-line {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+.footer-compressa-title.stroke span {
+  position: relative;
+  color: #000;
+  line-height: inherit;
+}
+.footer-compressa-title.stroke span::after {
+  content: attr(data-char);
+  -webkit-text-stroke-width: 3px;
+  -webkit-text-stroke-color: #000;
+  position: absolute;
+  left: 0;
+  line-height: inherit;
+  color: transparent;
+  z-index: -1;
 }
 
 /* (estilos do infinite scroll removidos) */

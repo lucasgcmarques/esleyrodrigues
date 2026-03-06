@@ -67,73 +67,64 @@ export function ProjectsScroll({ projects = [] }) {
       const boxes = gsap.utils.toArray(".project-box");
       const listItems = gsap.utils.toArray(".project-list-item");
 
-      boxes.forEach((box, i) => {
-        const img = box.querySelector("img");
-        if (!img) return;
+      // Animação de scale/scrub só em telas grandes (lg: 1024px+)
+      const mm = gsap.matchMedia();
+      mm.add("(min-width: 1024px)", () => {
+        boxes.forEach((box, i) => {
+          const img = box.querySelector("img");
+          if (!img) return;
 
-        const smallW = parseInt(box.dataset.width, 10);
-        const smallH = parseInt(box.dataset.height, 10);
-        const scaleFactor = parseFloat(box.dataset.scale, 10) || 1.8;
-        if (Number.isNaN(smallW) || Number.isNaN(smallH)) return;
-        const bigW = smallW * scaleFactor;
-        const bigH = smallH * scaleFactor;
+          const smallW = parseInt(box.dataset.width, 10);
+          const smallH = parseInt(box.dataset.height, 10);
+          const scaleFactor = parseFloat(box.dataset.scale, 10) || 1.8;
+          if (Number.isNaN(smallW) || Number.isNaN(smallH)) return;
+          const bigW = smallW * scaleFactor;
+          const bigH = smallH * scaleFactor;
 
-        // Todas começam pequenas para terem a mesma animação de scale
-        gsap.set(box, {
-          width: smallW,
-          height: smallH,
-        });
+          gsap.set(box, {
+            width: smallW,
+            height: smallH,
+          });
 
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: box,
-            start: "top 85%",
-            end: "bottom 25%",
-            scrub: 1,
-            invalidateOnRefresh: true,
-            markers: true,
-            onUpdate: (self) => {
-              if (self.progress > 0.2 && self.progress < 0.8) {
-                gsap.set(listItems, { opacity: 0.4 });
-                gsap.set(listItems[i], { opacity: 1 });
-              }
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: box,
+              start: "top 85%",
+              end: "bottom 25%",
+              scrub: 1,
+              invalidateOnRefresh: true,
+              onUpdate: (self) => {
+                if (self.progress > 0.2 && self.progress < 0.8) {
+                  gsap.set(listItems, { opacity: 0.4 });
+                  gsap.set(listItems[i], { opacity: 1 });
+                }
+              },
             },
-          },
-        });
+          });
 
-        // Todas: entrar pequenas → crescer → voltar para pequeno
-        tl.to(box, {
-          width: bigW,
-          height: bigH,
-          duration: 0.5,
-          ease: "none",
-        })
-
-          .to(box, {
+          tl.to(box, {
+            width: bigW,
+            height: bigH,
+            duration: 0.5,
+            ease: "none",
+          }).to(box, {
             width: smallW,
             height: smallH,
             duration: 0.5,
             ease: "none",
           });
-      });
+        });
 
-      const projectsList = gsap.utils.toArray(".projects-list");
-      projectsList.forEach((list) => {
-        gsap.fromTo(
-          list,
-          {
-            opacity: 0,
-            y: 100,
-          },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.5,
-            ease: "none",
-          },
-        );
+        const projectsList = gsap.utils.toArray(".projects-list");
+        projectsList.forEach((list) => {
+          gsap.fromTo(
+            list,
+            { opacity: 0, y: 100 },
+            { opacity: 1, y: 0, duration: 0.5, ease: "none" },
+          );
+        });
+        ScrollTrigger.refresh();
       });
-      ScrollTrigger.refresh();
     });
 
     return () => {
@@ -165,8 +156,15 @@ export function ProjectsScroll({ projects = [] }) {
     }, 0) + 80;
 
   return (
-    <div className="flex mx-6 " style={{ minHeight: totalMinHeight }}>
-      <div className="projects-list sticky top-[500px] self-start mb-25  min-w-80">
+    <div
+      className="flex flex-col lg:flex-row mx-4 sm:mx-6 justify-center lg:justify-start"
+      style={{ minHeight: totalMinHeight }}
+    >
+      {/* Lista lateral: só em desktop */}
+      <div
+        className="projects-list hidden lg:block sticky self-end mb-25 min-w-80"
+        style={{ bottom: 20 }}
+      >
         <ul className="flex flex-col items-start">
           {projects.map((project) => (
             <li key={project.url} className="project-list-item">
@@ -177,7 +175,9 @@ export function ProjectsScroll({ projects = [] }) {
           ))}
         </ul>
       </div>
-      <div className=" mt-[500px] flex flex-col items-start gap-5 mb-20 ml-10 md:ml-50  bg-blue-50">
+
+      {/* Coluna de projetos: centralizada em mobile/tablet */}
+      <div className="mt-30 lg:mt-[450px] flex flex-col items-center lg:items-start gap-5 mb-20 w-full max-w-lg lg:max-w-none lg:ml-10 xl:ml-50 mx-auto lg:mx-0">
         {projects.map((project) => {
           if (!project.image) return null;
           const origW = project.width ?? 1920;
@@ -188,34 +188,49 @@ export function ProjectsScroll({ projects = [] }) {
           );
 
           return (
-            <button
+            <div
               key={project.url}
-              type="button"
-              onClick={(e) => handleCardClick(e, project)}
-              className="group block text-left w-full cursor-pointer border-0 p-0 bg-transparent"
+              className="w-full flex flex-col items-center lg:items-start"
             >
-              <div
-                className="project-box relative overflow-hidden "
-                style={{ width: `${smallW}px`, height: `${smallH}px` }}
-                data-width={smallW}
-                data-height={smallH}
-                data-scale={scaleFactor}
+              {/* Nome acima do projeto: só em mobile/tablet */}
+              <span className="lg:hidden  font-medium mb-1  w-full">
+                <a
+                  href={project.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:font-semibold transition-[font-weight]"
+                >
+                  {project.name}
+                </a>
+              </span>
+              <button
+                type="button"
+                onClick={(e) => handleCardClick(e, project)}
+                className="group block text-left w-full cursor-pointer border-0 p-0 bg-transparent"
               >
-                <img
-                  src={project.image}
-                  alt={project.name}
-                  loading="lazy"
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02] "
-                />
-              </div>
-            </button>
+                <div
+                  className="project-box relative overflow-hidden mx-auto lg:mx-0"
+                  style={{ width: `${smallW}px`, height: `${smallH}px` }}
+                  data-width={smallW}
+                  data-height={smallH}
+                  data-scale={scaleFactor}
+                >
+                  <img
+                    src={project.image}
+                    alt={project.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                  />
+                </div>
+              </button>
+            </div>
           );
         })}
       </div>
 
       {selectedProject && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-visible"
+          className="fixed inset-0 z-100 flex items-center justify-center overflow-visible"
           role="dialog"
           aria-modal="true"
           aria-label={`Vídeo: ${selectedProject.project.name}`}
