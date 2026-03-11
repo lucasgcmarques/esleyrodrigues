@@ -3,6 +3,7 @@ import { SiteHeader } from "./components/SiteHeader";
 import { MainContent } from "./components/MainContent";
 import { ProjectsScroll } from "./components/ProjectsScroll";
 import { SiteFooter } from "./components/SiteFooter";
+import LiquidEther from "./LiquidEther";
 import {
   useScrambleTimeline,
   runScrambleAnimation,
@@ -121,16 +122,40 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <SiteHeader
-        siteTitle={siteTitle}
-        links={links}
-        lang={lang}
-        onChangeLang={setLang}
-        titleRef={titleRef}
-      />
-      <ProjectsScroll projects={projects} />
-      <SiteFooter email={email} />
+    <div className="flex flex-col min-h-screen relative">
+      <div className="fixed inset-0 z-0" aria-hidden>
+        <LiquidEther
+          colors={["#fff", "#Fff", "#ffff"]}
+          mouseForce={20}
+          cursorSize={100}
+          isViscous
+          viscous={30}
+          iterationsViscous={32}
+          iterationsPoisson={32}
+          resolution={0.5}
+          isBounce={false}
+          autoDemo
+          autoSpeed={0.5}
+          autoIntensity={2.2}
+          takeoverDuration={0.25}
+          autoResumeDelay={3000}
+          autoRampDuration={0.6}
+          style={{
+            opacity: 0.2,
+          }}
+        />
+      </div>
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <SiteHeader
+          siteTitle={siteTitle}
+          links={links}
+          lang={lang}
+          onChangeLang={setLang}
+          titleRef={titleRef}
+        />
+        <ProjectsScroll projects={projects} />
+        <SiteFooter email={email} />
+      </div>
     </div>
   );
 }
